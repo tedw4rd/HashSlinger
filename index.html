@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hash Slinger</title>
+    <script src="js/crypto-js.min.js" type="application/javascript"></script>
+    <script src="js/papaparse.min.js" type="application/javascript"></script>
+</head>
+<body>
+<button id="fileButton">Select CSV</button>
+
+<input id="file-input" type="file" name="name" style="display: none;" />
+<script type="application/javascript">
+
+    function download(filename, text) {
+        var pom = document.createElement('a');
+        pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        pom.setAttribute('download', filename);
+
+        if (document.createEvent) {
+            var event = document.createEvent('MouseEvents');
+            event.initEvent('click', true, true);
+            pom.dispatchEvent(event);
+        }
+        else {
+            pom.click();
+        }
+    }
+
+    document.getElementById("file-input").onchange = e => {
+        var file = e.target.files[0];
+        var filename = file.name.split(".")[0];
+        Papa.parse(file, {
+            complete: function(results) {
+                var md5 = "";
+                var sha1 = "";
+                var sha256 = "";
+                let delim = ",\n";
+                for (let i = 0; i < results.data.length; i++) {
+                    md5 += CryptoJS.MD5(results.data[i][0]) + delim;
+                    sha1 += CryptoJS.SHA1(results.data[i][0]) + delim;
+                    sha256 += CryptoJS.SHA256(results.data[i][0]) + delim;
+                }
+                download(filename + "_md5.csv", md5);
+                download(filename + "_sha1.csv", sha1);
+                download(filename + "_sha256.csv", sha256);
+            }
+        });
+    };
+document.getElementById("fileButton").addEventListener("click", function() {
+    document.getElementById("file-input").click();
+})
+</script>
+</body>
+</html>
